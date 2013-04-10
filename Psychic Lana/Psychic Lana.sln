@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Psychic Lana", "Psychic Lana\Psychic Lana\Psychic Lana.csproj", "{42381074-53A3-4926-A073-FE68D99F6220}"
+EndProject
+Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "Psychic LanaContent", "Psychic Lana\Psychic LanaContent\Psychic LanaContent.contentproj", "{B80FCD1F-F8C4-4EB0-AC2D-E189B31F6CC1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{42381074-53A3-4926-A073-FE68D99F6220}.Debug|x86.ActiveCfg = Debug|x86
+		{42381074-53A3-4926-A073-FE68D99F6220}.Debug|x86.Build.0 = Debug|x86
+		{42381074-53A3-4926-A073-FE68D99F6220}.Release|x86.ActiveCfg = Release|x86
+		{42381074-53A3-4926-A073-FE68D99F6220}.Release|x86.Build.0 = Release|x86
+		{B80FCD1F-F8C4-4EB0-AC2D-E189B31F6CC1}.Debug|x86.ActiveCfg = Debug|x86
+		{B80FCD1F-F8C4-4EB0-AC2D-E189B31F6CC1}.Release|x86.ActiveCfg = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
