@@ -11,13 +11,14 @@ using Microsoft.Xna.Framework.Media;
 // added
 using Psychic_Lana.Overhead;
 using Psychic_Lana.Screens;
+using Psychic_Lana.Graphics;
 
 namespace Psychic_Lana.Entities
 {
 	/// <summary>
 	/// Enumeration representing various AI control Methods 
 	/// </summary>
-	public enum AIMode { DirectControl, Wait};
+	public enum AIMode { DirectControl, Wait };
 	/// <summary>
 	/// Enumeration for Direction
 	/// </summary>
@@ -28,7 +29,10 @@ namespace Psychic_Lana.Entities
 	public class Entity
 	{
 		// Temporary Data
-		public Texture2D sprite;
+		public SpriteSheet CurrentGraphic;
+		public Dictionary<String, SpriteSheet> Graphics = new Dictionary<String, SpriteSheet>();
+		public String GraphicState = "standing";
+		public double Frame = 0;
 
 		// Positional Information
 		/// <summary>
@@ -59,10 +63,11 @@ namespace Psychic_Lana.Entities
 		/// Direction of movement
 		/// </summary>
 		public Direction MovementDirection;
+		public Direction Facing = Direction.South;
 		/// <summary>
 		/// Movement Speed
 		/// </summary>
-		public float Speed = 5.5f; 
+		public float Speed = 3.3f;
 
 
 		/// <summary>
@@ -72,21 +77,34 @@ namespace Psychic_Lana.Entities
 		GameScreen gameScreen;
 
 
-		public virtual void Initialize(GameScreen gameScreen, Texture2D sprite, int x, int y, Rectangle Collision)
+		public virtual void Initialize(GameScreen gameScreen, int x, int y, Rectangle Collision)
 		{
-			this.sprite = sprite;
 			Position.X = x;
 			Position.Y = y;
 			GlobalReference.setTilePosition(Position, TilePosition);
 			this.gameScreen = gameScreen;
 			this.Collision = Collision;
 		}
+		/// <summary>
+		/// Add a graphic to the sprite sheet dictionary
+		/// </summary>
+		/// <param name="name"> Key </param>
+		/// <param name="spriteSheet"> Graphic </param>
+		/// <param name="elementWidth"> Width of an individual Element </param>
+		/// <param name="elementHeight"> Height of an individual Element </param>
+		public virtual void AddSpriteSheet(String name, Texture2D spriteSheet, int elementWidth, int elementHeight)
+		{
+			SpriteSheet graphic = new SpriteSheet();
+			graphic.Initialize(spriteSheet, elementWidth, elementHeight);
+			Graphics.Add(name, graphic);
+		}
 
+		#region Update
 		public virtual void Update(GameTime gameTime)
 		{
 			UpdateAI();
 			UpdateCollisions();
-			UpdatePosition();
+			UpdatePosition(gameTime);
 		}
 
 		/// <summary>
@@ -104,28 +122,60 @@ namespace Psychic_Lana.Entities
 				default:
 					break;
 			}
-			// Calculate Direction
+			// Calculate Movement Direction and Facing
 			if (Heading.Y < 0 && Heading.X == 0)
-				MovementDirection = Direction.North;
+			{
+				Facing = MovementDirection = Direction.North;
+			}
 			else if (Heading.Y < 0 && Heading.X > 0)
+			{
 				MovementDirection = Direction.NorthEast;
+				if (Facing != Direction.North)
+					Facing = Direction.East;
+			}
 			else if (Heading.Y == 0 && Heading.X > 0)
-				MovementDirection = Direction.East;
+			{
+				Facing = MovementDirection = Direction.East;
+			}
 			else if (Heading.Y > 0 && Heading.X > 0)
+			{
 				MovementDirection = Direction.SouthEast;
+				if (Facing != Direction.East)
+					Facing = Direction.South;
+			}
 			else if (Heading.Y > 0 && Heading.X == 0)
-				MovementDirection = Direction.South;
+			{
+				Facing = MovementDirection = Direction.South;
+			}
 			else if (Heading.Y > 0 && Heading.X < 0)
+			{
 				MovementDirection = Direction.SouthWest;
+				if (Facing != Direction.South)
+					Facing = Direction.West;
+			}
 			else if (Heading.Y == 0 && Heading.X < 0)
-				MovementDirection = Direction.West;
+			{
+				Facing = MovementDirection = Direction.West;
+			}
 			else if (Heading.Y < 0 && Heading.X < 0)
+			{
 				MovementDirection = Direction.NorthWest;
+				if (Facing != Direction.West)
+					Facing = Direction.North;
+			}
 			else
+			{
 				MovementDirection = Direction.Nowhere;
-
+			}
 			if (MovementDirection != Direction.Nowhere)
 			{
+				// Update Graphic
+				if (GraphicState != "walking")
+				{
+					GraphicState = "walking";
+					Frame = 0;
+				}
+
 				// Add Excess to Heading
 				Heading = Heading + Excess;
 
@@ -139,11 +189,18 @@ namespace Psychic_Lana.Entities
 			}
 			else
 			{
+				// Update Graphic
+				if(GraphicState != "standing")
+				{
+					GraphicState = "standing";
+					Frame = 0;
+				}
+
 				// Zero Heading and Excess
 				Heading *= 0;
 				Excess *= 0;
 			}
-			
+
 		}
 		/// <summary>
 		/// Check for player input and update the Heading
@@ -165,13 +222,13 @@ namespace Psychic_Lana.Entities
 			Heading = Heading * Speed;
 		}
 		/// <summary>
-		/// Updates the heading based on the collisions
+		/// Updates the heading based on the collisions. God damn, this code looks ugly.
 		/// </summary>
 		void UpdateCollisions()
 		{
 			Vector2 topLeft = Position; // + Heading; // Also the position Vector
 			Vector2 topRight = new Vector2(topLeft.X + (Collision.Width - 1), topLeft.Y);
-			Vector2 bottomLeft = new Vector2(topLeft.X, topLeft.Y + (Collision.Height -1));
+			Vector2 bottomLeft = new Vector2(topLeft.X, topLeft.Y + (Collision.Height - 1));
 			Vector2 bottomRight = new Vector2(topRight.X, bottomLeft.Y);
 
 			Vector2 xHeading = new Vector2(Heading.X, 0);
@@ -267,7 +324,7 @@ namespace Psychic_Lana.Entities
 		/// <summary>
 		/// Updates Position as well as general upkeep
 		/// </summary>
-		void UpdatePosition()
+		void UpdatePosition(GameTime gameTime)
 		{
 			// Update Position
 			Position = Position + Heading;
@@ -280,6 +337,11 @@ namespace Psychic_Lana.Entities
 			Center.X = Position.X + Collision.Width / 2;
 			Center.Y = Position.Y + Collision.Height / 2;
 
+			if (GraphicState == "walking" && MovementDirection != Direction.Nowhere)
+				Frame += Heading.Length() / 16;
+			else
+				Frame += 0.03;
+
 			// Zero Heading
 			Heading *= 0;
 
@@ -290,14 +352,38 @@ namespace Psychic_Lana.Entities
 					-MathHelper.Clamp(Center.Y - GlobalReference.ScreenHeight / 2, 0, gameScreen.mapManager.Current.Height * GlobalReference.TileSize - GlobalReference.ScreenHeight), 0);
 
 		}
+		#endregion
 
 		public virtual void Draw(SpriteBatch spriteBatch)
 		{
-
-			spriteBatch.Draw(sprite, SpritePosition(), Color.White);
-			if (GlobalReference.debugGraphics)
+			if (Graphics.TryGetValue(GraphicState, out CurrentGraphic))
+			{
+				CurrentGraphic.Draw(spriteBatch, SpritePosition(), (int)Frame, DirectionFrame());
+			}
+			else
 			{
 				GlobalReference.DrawFilledRectangle(spriteBatch, new Rectangle((int)Position.X, (int)Position.Y, Collision.Width, Collision.Height), Color.Red, 0.50f);
+			}
+			if (GlobalReference.debugGraphics)
+			{
+				GlobalReference.DrawFilledRectangle(spriteBatch, new Rectangle((int)Position.X, (int)Position.Y, Collision.Width, Collision.Height), Color.Red, 1.0f);
+			}
+		}
+
+		private int DirectionFrame()
+		{
+			switch (Facing)
+			{
+				case Direction.North:
+					return 0;
+				case Direction.East:
+					return 1;
+				case Direction.South:
+					return 2;
+				case Direction.West:
+					return 3;
+				default:
+					return 2;
 			}
 		}
 		/// <summary>
@@ -306,7 +392,7 @@ namespace Psychic_Lana.Entities
 		/// <returns> The Rectangle representing the sprite to be drawn </returns>
 		Rectangle SpritePosition()
 		{
-			return new Rectangle((int)Position.X - Collision.X, (int)Position.Y - Collision.Y, sprite.Width, sprite.Height);
+			return new Rectangle((int)Position.X - Collision.X, (int)Position.Y - Collision.Y, CurrentGraphic.ElementWidth, CurrentGraphic.ElementHeight);
 		}
 	}
 }

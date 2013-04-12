@@ -45,10 +45,9 @@ namespace Psychic_Lana.Screens
 
 			// Create Player
 			Player = new Entity();
-			//Player.Initialize(this, Game.game.Content.Load<Texture2D>(@"Graphics/Entity/testPlayer"), GlobalReference.startX, GlobalReference.startY, new Rectangle(0, 20, 16, 12));
-			//Player.Initialize(this, Game.game.Content.Load<Texture2D>(@"Graphics/Entity/smallPlayer"), GlobalReference.startX, GlobalReference.startY, new Rectangle(0, 2, 2, 2));
-			//Player.Initialize(this, Game.game.Content.Load<Texture2D>(@"Graphics/Entity/steve"), GlobalReference.startX, GlobalReference.startY, new Rectangle(0, 7, 6, 3));
-			Player.Initialize(this, Game.game.Content.Load<Texture2D>(@"Graphics/Entity/thing"), GlobalReference.startX, GlobalReference.startY, new Rectangle(3, 8, 26, 12));
+			Player.Initialize(this, GlobalReference.startX, GlobalReference.startY, new Rectangle(2, 18, 12, 9));
+			Player.AddSpriteSheet("standing", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/player/standing"), 16, 27);
+			Player.AddSpriteSheet("walking", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/player/walking"), 16, 27);
 			Player.Mode = AIMode.DirectControl;
 			testMap.Entities.Add(Player);
 

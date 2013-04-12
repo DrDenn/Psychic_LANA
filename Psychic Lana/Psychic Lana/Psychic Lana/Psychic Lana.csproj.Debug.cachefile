@@ -7,5 +7,7 @@ Content\Graphics\Map\testTileset\tileset.xnb
 Content\Fonts\default14.xnb
 Content\Fonts\default10.xnb
 Content\Fonts\default08.xnb
+Content\Graphics\Entity\player\standing.xnb
+Content\Graphics\Entity\player\walking.xnb
 Maps\MapFiles\MapData\testMap.dat
 Maps\MapFiles\Tilesets\testTileset.tsd

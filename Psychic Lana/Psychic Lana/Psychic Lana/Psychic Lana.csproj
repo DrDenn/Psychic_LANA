@@ -111,6 +111,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GameObjects\Entity.cs" />
+    <Compile Include="Graphics\SpriteSheet.cs" />
     <Compile Include="Maps\Map.cs" />
     <Compile Include="Maps\MapManager.cs" />
     <Compile Include="Maps\Tileset.cs" />
