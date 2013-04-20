@@ -19,7 +19,7 @@ namespace Psychic_Lana.Entities
 	/// <summary>
 	/// Enumeration representing various AI control Methods 
 	/// </summary>
-	public enum AIMode { DirectControl, Wait };
+	public enum AIMode { DirectControl, Wait, Seek };
 	/// <summary>
 	/// Enumeration for Direction
 	/// </summary>
@@ -82,7 +82,12 @@ namespace Psychic_Lana.Entities
 		/// Entity AI Mode
 		/// </summary>
 		public AIMode Mode = AIMode.Wait;
+
+
 		//GameScreen gameScreen;
+		/// <summary>
+		/// Reference to the current map
+		/// </summary>
 		Map map;
 
 

@@ -202,5 +202,56 @@ namespace Psychic_Lana.Maps
 			}
 			return new Vector2(0, 0);
 		}
+
+
+		public List<Vector2> TilePath(Vector2 start, Vector2 end)
+		{
+			start = GlobalReference.GetTilePosition(start);
+			end = GlobalReference.GetTilePosition(end);
+			// Initialize Structures
+			double[,] gScore = new double[Width, Height];
+			double[,] fScore = new double[Width, Height];
+			bool[,] visited = new bool[Width, Height];
+			List<Vector2> openset = new List<Vector2>();
+			Vector2[,] cameFrom = new Vector2[Width, Height];
+
+			// Add starting node to the list, and calculate the score
+			openset.Add(start);
+			gScore[(int)start.X, (int)start.Y] = 0;
+			fScore[(int)start.X, (int)start.Y] = gScore[(int)start.X, (int)start.Y] + GlobalReference.VectorDistance(start, end);
+
+			// A* loop (Sort openset each time)
+			for (openset.Sort(delegate(Vector2 first, Vector2 second)
+				{ return GlobalReference.VectorDistance(first, end).CompareTo(GlobalReference.VectorDistance(second, end)); });
+				openset.Count != 0;
+				openset.Sort(delegate(Vector2 first, Vector2 second)
+				{ return GlobalReference.VectorDistance(first, end).CompareTo(GlobalReference.VectorDistance(second, end)); }))
+			{
+				Vector2 current = openset.ElementAt(0);
+				if (current == end)
+				{
+					return ReconstructTilePath(cameFrom, current);
+				}
+
+				openset.RemoveAt(0);
+				visited[(int)current.X, (int)current.Y] = true;
+
+				//// Try surrounding neihgbors
+				//for (int j = (int)current.Y - 1; j <= (int)current.Y + 1; j++)
+				//{
+				//    for (int i = (int)current.X - 1; i <= (int)current.X + 1; i++)
+				//    {
+				//        // Skip current position and invalid paths
+				//        if((i == (int)current.X && j == (int)current.Y) || 
+			}
+
+				return null;
+		}
+		List<Vector2> ReconstructTilePath(Vector2[,] cameFrom, Vector2 currentNode)
+		{
+			//RECONSTRUCT PATH
+
+			return null;
+		}
 	}
 }

@@ -138,5 +138,10 @@ namespace Psychic_Lana.Overhead
 		{
 			return new Vector2(-Game.game.Camera.Translation.X, -Game.game.Camera.Translation.Y);
 		}
+
+		public static double VectorDistance(Vector2 here, Vector2 there)
+		{
+			return Math.Sqrt(((here.X - there.X) * (here.X - there.X)) + ((here.Y - there.Y) * (here.Y - there.Y)));
+		}
 	}
 }
