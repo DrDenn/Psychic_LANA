@@ -17,25 +17,51 @@ namespace Psychic_Lana.Overhead
 	public static class GlobalReference
 	{
 		// Debug
+		/// <summary>
+		/// Displays debug information if true
+		/// </summary>
 		public static bool debug = true;
+		/// <summary>
+		/// Displays collision box if true
+		/// </summary>
 		public static bool debugGraphics = false;
 
 		// Constants
+		/// <summary>
+		/// Used for any calculation based on the tile size
+		/// </summary>
 		public static int TileSize = 16;
+		/// <summary>
+		/// Used for scanning through text, splits input by " "
+		/// </summary>
 		public static String[] Separators = { " " };
+		/// <summary>
+		/// Player starting postion
+		/// </summary>
 		public static int startX = 64, startY = 64;
+		/// <summary>
+		/// Default screen size
+		/// </summary>
 		public static int ScreenWidth = 320, ScreenHeight = 240;
 
 		// Graphics
-		/// <summary> Single white pixel, can be recolored and streched </summary>
+		/// <summary> 
+		/// Single white pixel, can be recolored and streched 
+		/// </summary>
 		public static Texture2D whitePixel;
 
 		// Fonts
-		/// <summary> Default font, size 08 </summary>
+		/// <summary> 
+		/// Default font, size 08 
+		/// </summary>
 		public static SpriteFont default08;
-		/// <summary> Default font, size 10 </summary>
+		/// <summary> 
+		/// Default font, size 10 
+		/// </summary>
 		public static SpriteFont default10;
-		/// <summary> Default font, size 14</summary>
+		/// <summary> 
+		/// Default font, size 14
+		/// </summary>
 		public static SpriteFont default14;
 
 		public static void LoadContent(ContentManager content)

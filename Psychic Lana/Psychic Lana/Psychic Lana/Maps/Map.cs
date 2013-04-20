@@ -147,5 +147,60 @@ namespace Psychic_Lana.Maps
 				return true;
 			return false;
 		}
+		/// <summary>
+		/// Given a point, number of tiles wide, and number of tiles tall, checks if a space has room. 
+		/// returns 0,0 if unable to move, otherwise returns a vector towards its center.
+		/// </summary>
+		/// <param name="position"> x,y position to check from </param>
+		/// <param name="width"> number of tiles wide </param>
+		/// <param name="height"> number of tiles tall </param>
+		/// <returns></returns>
+		public Vector2 CheckForSpace(Vector2 position, int width, int height)
+		{
+			// If the starting position is blocked, invalid
+			if(CheckCollisions(position))
+				return new Vector2(0, 0);
+
+			// Set variables to each end of the starting tile (indicated by where position lies)
+			float north = (float)Math.Floor(position.Y / GlobalReference.TileSize) * GlobalReference.TileSize;
+			float south = north + GlobalReference.TileSize;
+			float west = (float)Math.Floor(position.X / GlobalReference.TileSize) * GlobalReference.TileSize;
+			float east = west + GlobalReference.TileSize;
+
+			int horizontal = 0;
+			for (Vector2 check = new Vector2(position.X - GlobalReference.TileSize, position.Y); !CheckCollisions(check) && horizontal < width; check.X -= GlobalReference.TileSize)
+			{
+				horizontal++;
+				west -= GlobalReference.TileSize;
+			}
+			for (Vector2 check = new Vector2(position.X + GlobalReference.TileSize, position.Y); !CheckCollisions(check) && horizontal < width; check.X += GlobalReference.TileSize)
+			{
+				horizontal++;
+				east += GlobalReference.TileSize;
+			}
+			
+			int vertical = 0;
+			for (Vector2 check = new Vector2(position.X, position.Y - GlobalReference.TileSize); !CheckCollisions(check) && vertical < height; check.Y -= GlobalReference.TileSize)
+			{
+				vertical++;
+				north -= GlobalReference.TileSize;
+			}
+			for (Vector2 check = new Vector2(position.X, position.Y + GlobalReference.TileSize); !CheckCollisions(check) && vertical < height; check.Y += GlobalReference.TileSize)
+			{
+				vertical++;
+				south += GlobalReference.TileSize;
+			}
+
+			// If space has been found, calculate the distance to the center of all of them
+			if (horizontal == width && vertical == height)
+			{
+				Vector2 center = new Vector2((float)Math.Floor((west + east) / 2), (float)Math.Floor((north + south) / 2));
+				center = center - position;
+				center.X /= center.X < 0 ? -center.X : center.X;
+				center.Y /= center.Y < 0 ? -center.Y : center.Y;
+				return center;
+			}
+			return new Vector2(0, 0);
+		}
 	}
 }

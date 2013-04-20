@@ -4,14 +4,18 @@
 	Description: A 2D Action RPG Monster Battling game
 ******************************************************
 ##Changelog##
-#April 12th, 2013# Brandon
+#April 20th, 2013 Brandon
+* Updated cornering collisions to allow for rounding of corners
+	* Dynamically works with different collision boxes
+
+#April 12th, 2013 Brandon
 + Added basic animation framework
 	+ Requires manually changing inside entity code
 	+ Includes facing directions, movement animations, and standing animations
 	
 * Expanded map to test open area movement
 
-#April 10th, 2013# Brandon
+#April 10th, 2013 Brandon
 + Added game
 + Map renderer
 	+ Tilesets

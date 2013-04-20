@@ -45,7 +45,7 @@ namespace Psychic_Lana.Screens
 
 			// Create Player
 			Player = new Entity();
-			Player.Initialize(this, GlobalReference.startX, GlobalReference.startY, new Rectangle(2, 18, 12, 9));
+			Player.Initialize(this, GlobalReference.startX, GlobalReference.startY, new Rectangle(2, 0, 12, 12));
 			Player.AddSpriteSheet("standing", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/player/standing"), 16, 27);
 			Player.AddSpriteSheet("walking", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/player/walking"), 16, 27);
 			Player.Mode = AIMode.DirectControl;
@@ -72,7 +72,11 @@ namespace Psychic_Lana.Screens
 				debugLine.Append("Tile:(" + Player.TilePosition.X + ", " + Player.TilePosition.Y + ") "); // Tile Position
 				debugLine.Append("Cent:(" + Player.Center.X + ", " + Player.Center.Y + ") "); // Center
 				//debugLine.Append("Exc:(" + Player.Excess.X + ", " + Player.Excess.Y + ") "); // Excess Heading
-				debugLine.Append("\nMove: " + Player.MovementDirection); // Direction
+				debugLine.Append("\nFace: " + Player.Facing + " "); // Facing 
+				debugLine.Append("Anim: " + Player.GraphicState + " "); // Graphic state
+				debugLine.Append("Move: " + Player.MovementDirection + " "); // Direction
+				//debugLine.Append("TlSz: (" + Player.CollisionTiles.X + ", " + Player.CollisionTiles.Y + ") "); // Collision box tile size
+
 
 				spriteBatch.DrawString(GlobalReference.default08, debugLine, GlobalReference.getScreenTopLeft() + new Vector2(5, 5), Color.Black);
 				spriteBatch.DrawString(GlobalReference.default08, debugLine, GlobalReference.getScreenTopLeft() + new Vector2(4, 4), Color.White);

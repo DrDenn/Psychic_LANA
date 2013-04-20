@@ -12,6 +12,7 @@ using Microsoft.Xna.Framework.Media;
 using Psychic_Lana.Overhead;
 using Psychic_Lana.Screens;
 using Psychic_Lana.Graphics;
+using Psychic_Lana.Maps;
 
 namespace Psychic_Lana.Entities
 {
@@ -40,6 +41,10 @@ namespace Psychic_Lana.Entities
 		/// </summary>
 		public Rectangle Collision;
 		/// <summary>
+		/// Number of tiles Collision box takes up in x and y direction
+		/// </summary>
+		public Vector2 CollisionTiles;
+		/// <summary>
 		/// Entity Position Vector (Top left of Collision Box
 		/// </summary>
 		public Vector2 Position;
@@ -63,6 +68,9 @@ namespace Psychic_Lana.Entities
 		/// Direction of movement
 		/// </summary>
 		public Direction MovementDirection;
+		/// <summary>
+		/// Direction the entity is facing (four directions)
+		/// </summary>
 		public Direction Facing = Direction.South;
 		/// <summary>
 		/// Movement Speed
@@ -74,16 +82,19 @@ namespace Psychic_Lana.Entities
 		/// Entity AI Mode
 		/// </summary>
 		public AIMode Mode = AIMode.Wait;
-		GameScreen gameScreen;
+		//GameScreen gameScreen;
+		Map map;
 
 
-		public virtual void Initialize(GameScreen gameScreen, int x, int y, Rectangle Collision)
+		public virtual void Initialize(GameScreen gameScreen, int x, int y, Rectangle collisionbox)
 		{
 			Position.X = x;
 			Position.Y = y;
 			GlobalReference.setTilePosition(Position, TilePosition);
-			this.gameScreen = gameScreen;
-			this.Collision = Collision;
+			map = gameScreen.mapManager.Current;
+			Collision = collisionbox;
+			CollisionTiles.X = (float)Math.Floor((double)((Collision.Width - 1) / GlobalReference.TileSize));
+			CollisionTiles.Y = (float)Math.Floor((double)((Collision.Height - 1) / GlobalReference.TileSize));
 		}
 		/// <summary>
 		/// Add a graphic to the sprite sheet dictionary
@@ -99,6 +110,7 @@ namespace Psychic_Lana.Entities
 			Graphics.Add(name, graphic);
 		}
 
+		// Handles AI update, collision check, and position update
 		#region Update
 		public virtual void Update(GameTime gameTime)
 		{
@@ -237,81 +249,93 @@ namespace Psychic_Lana.Entities
 			switch (MovementDirection)
 			{
 				case Direction.North:
-					if (gameScreen.mapManager.Current.CheckCollisions(topLeft + yHeading, topRight + yHeading))
+					if (map.CheckCollisions(topLeft + yHeading, topRight + yHeading))
 					{
 						Heading.Y = (float)Math.Floor(Position.Y / GlobalReference.TileSize) * GlobalReference.TileSize - Position.Y;
+						// Cornering
+						Vector2 spaceCheck = map.CheckForSpace(Center - new Vector2(0, Collision.Height / 2 + GlobalReference.TileSize), (int)CollisionTiles.X, 0);
+						Heading.X = spaceCheck.Length() != 0? spaceCheck.X: Heading.X;
 					}
 					break;
 				case Direction.NorthEast:
-					if (gameScreen.mapManager.Current.CheckCollisions(topLeft + yHeading, topRight + yHeading))
+					if (map.CheckCollisions(topLeft + yHeading, topRight + yHeading))
 					{
 						Heading.Y = (float)Math.Floor(Position.Y / 16) * 16 - Position.Y;
 					}
-					if (gameScreen.mapManager.Current.CheckCollisions(topRight + xHeading, bottomRight + xHeading))
+					if (map.CheckCollisions(topRight + xHeading, bottomRight + xHeading))
 					{
 						Heading.X = (float)Math.Floor((Position.X + Collision.Width - 1) / GlobalReference.TileSize + 1) * GlobalReference.TileSize - (Position.X + Collision.Width);
 					}
-					if (xHeading.X == Heading.X && yHeading.Y == Heading.Y && gameScreen.mapManager.Current.CheckCollisions(topRight + Heading))
+					if (xHeading.X == Heading.X && yHeading.Y == Heading.Y && map.CheckCollisions(topRight + Heading))
 					{
 						Heading.X = (float)Math.Floor((Position.X + Collision.Width - 1) / GlobalReference.TileSize + 1) * GlobalReference.TileSize - (Position.X + Collision.Width);
 					}
 					break;
 				case Direction.East:
-					if (gameScreen.mapManager.Current.CheckCollisions(topRight + xHeading, bottomRight + xHeading))
+					if (map.CheckCollisions(topRight + xHeading, bottomRight + xHeading))
 					{
 						Heading.X = (float)Math.Floor((Position.X + Collision.Width - 1) / GlobalReference.TileSize + 1) * GlobalReference.TileSize - (Position.X + Collision.Width);
+						// Cornering
+						Vector2 spaceCheck = map.CheckForSpace(Center + new Vector2(Collision.Width / 2 + GlobalReference.TileSize - 1, 0), 0, (int)CollisionTiles.Y);
+						Heading.Y = spaceCheck.Length() != 0 ? spaceCheck.Y : Heading.Y;
 					}
 					break;
 				case Direction.SouthEast:
-					if (gameScreen.mapManager.Current.CheckCollisions(topRight + xHeading, bottomRight + xHeading))
+					if (map.CheckCollisions(topRight + xHeading, bottomRight + xHeading))
 					{
 						Heading.X = (float)Math.Floor((Position.X + Collision.Width - 1) / GlobalReference.TileSize + 1) * GlobalReference.TileSize - (Position.X + Collision.Width);
 					}
-					if (gameScreen.mapManager.Current.CheckCollisions(bottomLeft + yHeading, bottomRight + yHeading))
+					if (map.CheckCollisions(bottomLeft + yHeading, bottomRight + yHeading))
 					{
 						Heading.Y = (float)Math.Floor((Position.Y + Collision.Height - 1) / GlobalReference.TileSize + 1) * GlobalReference.TileSize - (Position.Y + Collision.Height);
 					}
-					if (xHeading.X == Heading.X && yHeading.Y == Heading.Y && gameScreen.mapManager.Current.CheckCollisions(bottomRight + Heading))
+					if (xHeading.X == Heading.X && yHeading.Y == Heading.Y && map.CheckCollisions(bottomRight + Heading))
 					{
 						Heading.Y = (float)Math.Floor((Position.Y + Collision.Height - 1) / GlobalReference.TileSize + 1) * GlobalReference.TileSize - (Position.Y + Collision.Height);
 					}
 					break;
 				case Direction.South:
-					if (gameScreen.mapManager.Current.CheckCollisions(bottomLeft + yHeading, bottomRight + yHeading))
+					if (map.CheckCollisions(bottomLeft + yHeading, bottomRight + yHeading))
 					{
 						Heading.Y = (float)Math.Floor((Position.Y + Collision.Height - 1) / GlobalReference.TileSize + 1) * GlobalReference.TileSize - (Position.Y + Collision.Height);
+						// Cornering
+						Vector2 spaceCheck = map.CheckForSpace(Center + new Vector2(0, Collision.Height / 2 + GlobalReference.TileSize - 1), (int)CollisionTiles.X, 0);
+						Heading.X = spaceCheck.Length() != 0 ? spaceCheck.X : Heading.X;
 					}
 					break;
 				case Direction.SouthWest:
-					if (gameScreen.mapManager.Current.CheckCollisions(bottomLeft + yHeading, bottomRight + yHeading))
+					if (map.CheckCollisions(bottomLeft + yHeading, bottomRight + yHeading))
 					{
 						Heading.Y = (float)Math.Floor((Position.Y + Collision.Height - 1) / GlobalReference.TileSize + 1) * GlobalReference.TileSize - (Position.Y + Collision.Height);
 					}
-					if (gameScreen.mapManager.Current.CheckCollisions(topLeft + xHeading, bottomLeft + xHeading))
+					if (map.CheckCollisions(topLeft + xHeading, bottomLeft + xHeading))
 					{
 						Heading.X = (float)Math.Floor(Position.X / GlobalReference.TileSize) * GlobalReference.TileSize - Position.X;
 					}
-					if (xHeading.X == Heading.X && yHeading.Y == Heading.Y && gameScreen.mapManager.Current.CheckCollisions(bottomLeft + Heading))
+					if (xHeading.X == Heading.X && yHeading.Y == Heading.Y && map.CheckCollisions(bottomLeft + Heading))
 					{
 						Heading.X = (float)Math.Floor(Position.X / GlobalReference.TileSize) * GlobalReference.TileSize - Position.X;
 					}
 					break;
 				case Direction.West:
-					if (gameScreen.mapManager.Current.CheckCollisions(topLeft + xHeading, bottomLeft + xHeading))
+					if (map.CheckCollisions(topLeft + xHeading, bottomLeft + xHeading))
 					{
 						Heading.X = (float)Math.Floor(Position.X / GlobalReference.TileSize) * GlobalReference.TileSize - Position.X;
+						// Cornering
+						Vector2 spaceCheck = map.CheckForSpace(Center - new Vector2(Collision.Width / 2 + GlobalReference.TileSize, 0), 0, (int)CollisionTiles.Y);
+						Heading.Y = spaceCheck.Length() != 0 ? spaceCheck.Y : Heading.Y;
 					}
 					break;
 				case Direction.NorthWest:
-					if (gameScreen.mapManager.Current.CheckCollisions(topLeft + xHeading, bottomLeft + xHeading))
+					if (map.CheckCollisions(topLeft + xHeading, bottomLeft + xHeading))
 					{
 						Heading.X = (float)Math.Floor(Position.X / GlobalReference.TileSize) * GlobalReference.TileSize - Position.X;
 					}
-					if (gameScreen.mapManager.Current.CheckCollisions(topLeft + yHeading, topRight + yHeading))
+					if (map.CheckCollisions(topLeft + yHeading, topRight + yHeading))
 					{
 						Heading.Y = (float)Math.Floor(Position.Y / GlobalReference.TileSize) * GlobalReference.TileSize - Position.Y;
 					}
-					if (xHeading.X == Heading.X && yHeading.Y == Heading.Y && gameScreen.mapManager.Current.CheckCollisions(topLeft + Heading))
+					if (xHeading.X == Heading.X && yHeading.Y == Heading.Y && map.CheckCollisions(topLeft + Heading))
 					{
 						Heading.X = (float)Math.Floor(Position.X / GlobalReference.TileSize) * GlobalReference.TileSize - Position.X;
 					}
@@ -348,8 +372,8 @@ namespace Psychic_Lana.Entities
 			// Update camera if player
 			if (Mode == AIMode.DirectControl)
 				Game.game.Camera = Matrix.CreateTranslation(
-					-MathHelper.Clamp(Center.X - GlobalReference.ScreenWidth / 2, 0, gameScreen.mapManager.Current.Width * GlobalReference.TileSize - GlobalReference.ScreenWidth),
-					-MathHelper.Clamp(Center.Y - GlobalReference.ScreenHeight / 2, 0, gameScreen.mapManager.Current.Height * GlobalReference.TileSize - GlobalReference.ScreenHeight), 0);
+					-MathHelper.Clamp(Center.X - GlobalReference.ScreenWidth / 2, 0, map.Width * GlobalReference.TileSize - GlobalReference.ScreenWidth),
+					-MathHelper.Clamp(Center.Y - GlobalReference.ScreenHeight / 2, 0, map.Height * GlobalReference.TileSize - GlobalReference.ScreenHeight), 0);
 
 		}
 		#endregion
@@ -392,7 +416,7 @@ namespace Psychic_Lana.Entities
 		/// <returns> The Rectangle representing the sprite to be drawn </returns>
 		Rectangle SpritePosition()
 		{
-			return new Rectangle((int)Position.X - Collision.X, (int)Position.Y - Collision.Y, CurrentGraphic.ElementWidth, CurrentGraphic.ElementHeight);
+			return new Rectangle((int)Position.X - Collision.X, (int)Position.Y + Collision.Y + Collision.Height - CurrentGraphic.ElementHeight, CurrentGraphic.ElementWidth, CurrentGraphic.ElementHeight);
 		}
 	}
 }
