@@ -29,6 +29,8 @@ namespace Psychic_Lana
 		/// <summary> Reference to the instance of the screenManager </summary>
 		public static ScreenManager screenManager;
 
+        //Flag if in fullscreen
+        private int fullscreen_flag;
 
 		// Game Instance Objects
 		GraphicsDeviceManager graphics;
@@ -52,8 +54,8 @@ namespace Psychic_Lana
 		public Game()
 		{
 			graphics = new GraphicsDeviceManager(this);
-			graphics.PreferredBackBufferWidth = GlobalReference.ScreenWidth;
-			graphics.PreferredBackBufferHeight = GlobalReference.ScreenHeight;
+            graphics.PreferredBackBufferWidth = GlobalReference.ScreenWidth;
+            graphics.PreferredBackBufferHeight = GlobalReference.ScreenHeight;
 			Content.RootDirectory = "Content";
 
 			game = this;
@@ -65,6 +67,9 @@ namespace Psychic_Lana
 			this.Window.Title = "Psychic Lana";
 			
 			this.Window.AllowUserResizing = false;
+
+            //Start in windowed mode
+            fullscreen_flag = 0;
 
 			// Give Screen Manager the screens and Transistion to the first screen
 			screenManager.AddScreen("Introduction", new IntroScreen());
@@ -92,8 +97,27 @@ namespace Psychic_Lana
 		{
 			if (Input.Pressed(Controls.Abort)) // Debug Exit
 				this.Exit();
-			if (Input.Pressed(Controls.Fullscreen))
-				graphics.ToggleFullScreen();
+            if (Input.Pressed(Controls.Fullscreen))
+            {
+                graphics.ToggleFullScreen();
+
+                //Double screen width and height if going into fullscreen
+                if (fullscreen_flag == 0)
+                {
+                    fullscreen_flag = 1;
+                    GlobalReference.ScreenHeight = GlobalReference.ScreenHeight * 2;
+                    GlobalReference.ScreenWidth = GlobalReference.ScreenWidth * 2;
+                }
+
+                //Half screen width and height if going into windowed mode
+                else if (fullscreen_flag == 1)
+                {
+                    fullscreen_flag = 0;
+                    GlobalReference.ScreenHeight = GlobalReference.ScreenHeight / 2;
+                    GlobalReference.ScreenWidth = GlobalReference.ScreenWidth / 2;
+                }
+            }
+				
 			Input.Update(gameTime);            // Update input
 			screenManager.Update(gameTime);    // Update Screen Manager (transitions and current screen)
 			base.Update(gameTime);             // Base update (probably does something?)
