@@ -125,7 +125,7 @@ namespace Psychic_Lana
 
 		protected override void Draw(GameTime gameTime)
 		{
-			GraphicsDevice.Clear(Color.CornflowerBlue); // Draw base which should probably be replaced
+			GraphicsDevice.Clear(Color.Black); // Draw base which should probably be replaced
 			spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone, null, Camera);
 			screenManager.Draw(spriteBatch);            // Draw Screen Manager (transitions and current screen)
 			spriteBatch.End();

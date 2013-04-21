@@ -87,13 +87,13 @@ namespace Psychic_Lana.Screens
 			if (Input.Pressed(Controls.Cancel))
 			{
 				if (Player.Mode == AIMode.Wait)
-					Player.Mode = AIMode.Seek;
-				else if (Player.Mode == AIMode.Seek)
+					Player.Mode = AIMode.Path;
+				else if (Player.Mode == AIMode.Path)
 					Player.Mode = AIMode.Wait;
 
 				if (Player2.Mode == AIMode.Wait)
-					Player2.Mode = AIMode.Seek;
-				else if (Player2.Mode == AIMode.Seek)
+					Player2.Mode = AIMode.Path;
+				else if (Player2.Mode == AIMode.Path)
 					Player2.Mode = AIMode.Wait;
 			}
 

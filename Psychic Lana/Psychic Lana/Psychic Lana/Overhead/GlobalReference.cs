@@ -28,7 +28,7 @@ namespace Psychic_Lana.Overhead
 		/// <summary>
 		/// Displays AStar Path
 		/// </summary>
-		public static bool debugPath = true;
+		public static bool debugPath = false;
 
 		// Constants
 		/// <summary>
@@ -151,7 +151,7 @@ namespace Psychic_Lana.Overhead
 		{
 			if(path != null)
 				for (int i = 0; i < path.Count(); i++)
-					DrawFilledRectangle(spriteBatch, new Rectangle((int)path.ElementAt(i).X, (int)path.ElementAt(i).Y, GlobalReference.TileSize, GlobalReference.TileSize), Color.Green, 1.0f);
+					DrawFilledRectangle(spriteBatch, new Rectangle((int)path.ElementAt(i).X * GlobalReference.TileSize, (int)path.ElementAt(i).Y * GlobalReference.TileSize, GlobalReference.TileSize, GlobalReference.TileSize), Color.Green, 1.0f);
 		}
 	}
 }

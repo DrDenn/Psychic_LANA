@@ -75,7 +75,7 @@ namespace Psychic_Lana.Entities
 		/// <summary>
 		/// Movement Speed
 		/// </summary>
-		public float Speed = 3.3f;
+		public float Speed = 2.2f;
 
 
 		/// <summary>
@@ -83,7 +83,8 @@ namespace Psychic_Lana.Entities
 		/// </summary>
 		public AIMode Mode = AIMode.Wait;
 		public Entity Target;
-		public List<Vector2> Path;
+		public List<Vector2> Path = null;
+
 
 		//GameScreen gameScreen;
 		/// <summary>
@@ -136,12 +137,14 @@ namespace Psychic_Lana.Entities
 					UpdateDirectControl();
 					break;
 				case AIMode.Wait:
+					Path = null;
 					break;
 				case AIMode.Seek:
-					UpdateSeek();
+					if(Target != null)
+						UpdateSeek(Target.Center);
 					break;
 				case AIMode.Path:
-					Path = map.TilePath(Position, Target.Position);
+					UpdatePath();
 					break;
 				default:
 					break;
@@ -249,21 +252,50 @@ namespace Psychic_Lana.Entities
 			
 		}
 
-		void UpdateSeek()
+		/// <summary>
+		/// Updates Heading based on the target
+		/// </summary>
+		/// <param name="target"></param>
+		void UpdateSeek(Vector2 target)
 		{
-			if (Target != null)
+			double distX = Center.X - target.X;
+			double distY = Center.Y - target.Y;
+			if (distY > Collision.Height / 2)
+				Heading.Y -= 1;
+			if (distX < -Collision.Width / 2)
+				Heading.X += 1;
+			if (distY < -Collision.Height / 2)
+				Heading.Y += 1;
+			if (distX > Collision.Width / 2)
+				Heading.X -= 1;
+		}
+		void FollowPath(Vector2 next)
+		{
+			double distX = Position.X - next.X;
+			double distY = Position.Y - next.Y;
+			if (distY > 0)
+				Heading.Y -= 1;
+			if (distX < Collision.Height / 2)
+				Heading.X += 1;
+			if (distY < Collision.Height / 2)
+				Heading.Y += 1;
+			if (distX > 0)
+				Heading.X -= 1;
+		}
+
+		void UpdatePath()
+		{
+			if (Path == null || Path.Count() == 0 || Path.ElementAt(Path.Count() - 1) != GlobalReference.GetTilePosition(Target.Center))
+				Path = map.TilePath(Position, Target.Center);
+			if (Path != null && Path.Count() > 0)
 			{
-				double distX = Center.X - Target.Center.X;
-				double distY = Center.Y - Target.Center.Y;
-				if (distY > Collision.Height / 2)
-					Heading.Y -= 1;
-				if (distX < -Collision.Width / 2)
-					Heading.X += 1;
-				if (distY < -Collision.Height / 2)
-					Heading.Y += 1;
-				if (distX > Collision.Width / 2)
-					Heading.X -= 1;
+				if (GlobalReference.GetTilePosition(Position) == Path.ElementAt(0))
+					Path.RemoveAt(0);
+				if (Path.Count() > 0)
+					FollowPath(new Vector2(Path.ElementAt(0).X * GlobalReference.TileSize, Path.ElementAt(0).Y * GlobalReference.TileSize));
 			}
+			if (Path == null)
+				UpdateSeek(Target.Center);
 		}
 
 		/// <summary>

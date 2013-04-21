@@ -213,29 +213,33 @@ namespace Psychic_Lana.Maps
 			}
 			return new Vector2(0, 0);
 		}
-		bool validPath(Vector2 start, Vector2 end)
+		public Boolean ValidPath(int sX, int sY, int tX, int tY)
 		{
-			if ((int)end.X < 0 || (int)end.Y > Width || (int)end.Y < 0 || (int)end.Y > Height || !passability[(int)end.X, (int)end.Y])
+			if (tX < 0 || tX >= Width || tY < 0 || tY >= Height || !passability[tX, tY])
 				return false;
-			if ((int)start.X == (int)end.X || (int)start.Y == (int)end.Y)
+			if (sX == tX || sY == tY)
 				return true;
-			if ((int)start.X - (int)end.X >= 0)
-				if (!passability[(int)start.X - 1, (int)start.Y])
+			if (sX - tX >= 0)
+				if (!passability[sX - 1, sY])
 					return false;
-			if ((int)start.X - (int)end.X < 0)
-				if (!passability[(int)start.X + 1, (int)start.Y])
+			if (sX - tX < 0)
+				if (!passability[sX + 1, sY])
 					return false;
-			if ((int)start.Y - (int)end.Y >= 0)
-				if (!passability[(int)start.X, (int)start.Y - 1])
+			if (sY - tY >= 0)
+				if (!passability[sX, sY - 1])
 					return false;
-			if ((int)start.Y - (int)end.Y < 0)
-				if (!passability[(int)start.X, (int)start.Y + 1])
+			if (sY - tY < 0)
+				if (!passability[sX, sY + 1])
 					return false;
 			return true;
 		}
 
 		public List<Vector2> TilePath(Vector2 start, Vector2 end)
 		{
+			// Do not calculate path if target postion is unreachable
+			if (CheckCollisions(end))
+				return null;
+
 			start = GlobalReference.GetTilePosition(start);
 			end = GlobalReference.GetTilePosition(end);
 			// Initialize Structures
@@ -244,6 +248,9 @@ namespace Psychic_Lana.Maps
 			bool[,] visited = new bool[Width, Height];
 			List<Vector2> openset = new List<Vector2>();
 			Vector2[,] cameFrom = new Vector2[Width, Height];
+			for (int j = 0; j < Height; j++)
+				for (int i = 0; i < Width; i++)
+					cameFrom[i, j] = new Vector2(-1,-1);
 
 			// Add starting node to the list, and calculate the score
 			openset.Add(start);
@@ -251,16 +258,12 @@ namespace Psychic_Lana.Maps
 			fScore[(int)start.X, (int)start.Y] = gScore[(int)start.X, (int)start.Y] + GlobalReference.VectorDistance(start, end);
 
 			// A* loop (Sort openset each time)
-			for (openset.Sort(delegate(Vector2 first, Vector2 second)
-				{
-					return GlobalReference.VectorDistance(second, end).CompareTo(GlobalReference.VectorDistance(first, end));
-				});
-				openset.Count != 0;
+			while (openset.Count != 0)
+			{
 				openset.Sort(delegate(Vector2 first, Vector2 second)
 				{
-					return GlobalReference.VectorDistance(second, end).CompareTo(GlobalReference.VectorDistance(first, end));
-				}))
-			{
+					return fScore[(int)first.X, (int)first.Y].CompareTo(fScore[(int)second.X, (int)second.Y]);
+				});
 				Vector2 current = openset.ElementAt(0);
 				if (current == end)
 				{
@@ -276,7 +279,7 @@ namespace Psychic_Lana.Maps
 					for (int i = (int)current.X - 1; i <= (int)current.X + 1; i++)
 					{
 						// Skip current position and invalid paths
-						if ((i == (int)current.X && j == (int)current.Y) || !validPath(current, new Vector2(i, j)))
+						if ((i == (int)current.X && j == (int)current.Y) || !ValidPath((int)current.X, (int)current.Y, i, j))
 							continue;
 						Vector2 neighbor = new Vector2(i, j);
 						double tentativeGScore = gScore[(int)current.X, (int)current.Y] + GlobalReference.VectorDistance(current, neighbor);
@@ -289,7 +292,7 @@ namespace Psychic_Lana.Maps
 						bool contains = false;
 						for (int k = 0; k < openset.Count(); k++)
 						{
-							if (openset.ElementAt(k).Equals(neighbor))
+							if ((int)openset.ElementAt(k).X == i && (int)openset.ElementAt(k).Y == j)
 							{
 								contains = true;
 								break;
@@ -313,7 +316,7 @@ namespace Psychic_Lana.Maps
 		List<Vector2> ReconstructTilePath(Vector2[,] cameFrom, Vector2 currentNode)
 		{
 			// If it's not the end, add the node
-			if (cameFrom[(int)currentNode.X, (int)currentNode.Y] != null)
+			if (!cameFrom[(int)currentNode.X, (int)currentNode.Y].Equals(new Vector2(-1,-1)))
 			{
 				List<Vector2> p = ReconstructTilePath(cameFrom, cameFrom[(int)currentNode.X, (int)currentNode.Y]);
 				p.Add(currentNode);
