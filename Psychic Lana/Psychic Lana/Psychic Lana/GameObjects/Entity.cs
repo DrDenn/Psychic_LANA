@@ -19,7 +19,7 @@ namespace Psychic_Lana.Entities
 	/// <summary>
 	/// Enumeration representing various AI control Methods 
 	/// </summary>
-	public enum AIMode { DirectControl, Wait, Seek };
+	public enum AIMode { DirectControl, Wait, Seek, Path };
 	/// <summary>
 	/// Enumeration for Direction
 	/// </summary>
@@ -82,7 +82,8 @@ namespace Psychic_Lana.Entities
 		/// Entity AI Mode
 		/// </summary>
 		public AIMode Mode = AIMode.Wait;
-
+		public Entity Target;
+		public List<Vector2> Path;
 
 		//GameScreen gameScreen;
 		/// <summary>
@@ -136,9 +137,21 @@ namespace Psychic_Lana.Entities
 					break;
 				case AIMode.Wait:
 					break;
+				case AIMode.Seek:
+					UpdateSeek();
+					break;
+				case AIMode.Path:
+					Path = map.TilePath(Position, Target.Position);
+					break;
 				default:
 					break;
 			}
+
+			// If x and y are BOTH non-zero, normalize Heading
+			if (Heading.X != 0 && Heading.Y != 0)
+				Heading.Normalize();
+			Heading = Heading * Speed;
+
 			// Calculate Movement Direction and Facing
 			if (Heading.Y < 0 && Heading.X == 0)
 			{
@@ -233,11 +246,26 @@ namespace Psychic_Lana.Entities
 				Heading.Y += 1;
 			if (Input.Down(Controls.Left))
 				Heading.X -= 1;
-			// If x and y are BOTH non-zero, normalize Heading
-			if (Heading.X != 0 && Heading.Y != 0)
-				Heading.Normalize();
-			Heading = Heading * Speed;
+			
 		}
+
+		void UpdateSeek()
+		{
+			if (Target != null)
+			{
+				double distX = Center.X - Target.Center.X;
+				double distY = Center.Y - Target.Center.Y;
+				if (distY > Collision.Height / 2)
+					Heading.Y -= 1;
+				if (distX < -Collision.Width / 2)
+					Heading.X += 1;
+				if (distY < -Collision.Height / 2)
+					Heading.Y += 1;
+				if (distX > Collision.Width / 2)
+					Heading.X -= 1;
+			}
+		}
+
 		/// <summary>
 		/// Updates the heading based on the collisions. God damn, this code looks ugly.
 		/// </summary>
@@ -346,8 +374,18 @@ namespace Psychic_Lana.Entities
 					}
 					break;
 				default:
-
 					break;
+			}
+			for (int i = 0; i < map.Entities.Count(); i++)
+			{
+				if (map.Entities.ElementAt(i) != this)
+				{
+					Rectangle rect1 = new Rectangle((int)map.Entities.ElementAt(i).Position.X, (int)map.Entities.ElementAt(i).Position.Y, (int)map.Entities.ElementAt(i).Collision.Width, (int)map.Entities.ElementAt(i).Collision.Height);
+					Vector2 projected = Position + Heading;
+					Rectangle rect2 = new Rectangle((int)projected.X, (int)projected.Y, Collision.Width, Collision.Height);
+					if (rect1.Intersects(rect2))
+						Heading *= 0;
+				}
 			}
 		}
 		/// <summary>

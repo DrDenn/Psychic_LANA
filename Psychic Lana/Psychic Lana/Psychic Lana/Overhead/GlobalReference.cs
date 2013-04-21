@@ -25,6 +25,10 @@ namespace Psychic_Lana.Overhead
 		/// Displays collision box if true
 		/// </summary>
 		public static bool debugGraphics = false;
+		/// <summary>
+		/// Displays AStar Path
+		/// </summary>
+		public static bool debugPath = true;
 
 		// Constants
 		/// <summary>
@@ -142,6 +146,12 @@ namespace Psychic_Lana.Overhead
 		public static double VectorDistance(Vector2 here, Vector2 there)
 		{
 			return Math.Sqrt(((here.X - there.X) * (here.X - there.X)) + ((here.Y - there.Y) * (here.Y - there.Y)));
+		}
+		public static void DrawPath(SpriteBatch spriteBatch, List<Vector2> path)
+		{
+			if(path != null)
+				for (int i = 0; i < path.Count(); i++)
+					DrawFilledRectangle(spriteBatch, new Rectangle((int)path.ElementAt(i).X, (int)path.ElementAt(i).Y, GlobalReference.TileSize, GlobalReference.TileSize), Color.Green, 1.0f);
 		}
 	}
 }

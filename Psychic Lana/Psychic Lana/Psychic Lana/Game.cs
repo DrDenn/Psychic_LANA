@@ -99,23 +99,23 @@ namespace Psychic_Lana
 				this.Exit();
             if (Input.Pressed(Controls.Fullscreen))
             {
-                graphics.ToggleFullScreen();
+				graphics.ToggleFullScreen();
 
-                //Double screen width and height if going into fullscreen
-                if (fullscreen_flag == 0)
-                {
-                    fullscreen_flag = 1;
-                    GlobalReference.ScreenHeight = GlobalReference.ScreenHeight * 2;
-                    GlobalReference.ScreenWidth = GlobalReference.ScreenWidth * 2;
-                }
+				//Double screen width and height if going into fullscreen
+				if (fullscreen_flag == 0)
+				{
+					fullscreen_flag = 1;
+					GlobalReference.ScreenHeight = GlobalReference.ScreenHeight * 2;
+					GlobalReference.ScreenWidth = GlobalReference.ScreenWidth * 2;
+				}
 
-                //Half screen width and height if going into windowed mode
-                else if (fullscreen_flag == 1)
-                {
-                    fullscreen_flag = 0;
-                    GlobalReference.ScreenHeight = GlobalReference.ScreenHeight / 2;
-                    GlobalReference.ScreenWidth = GlobalReference.ScreenWidth / 2;
-                }
+				//Half screen width and height if going into windowed mode
+				else if (fullscreen_flag == 1)
+				{
+					fullscreen_flag = 0;
+					GlobalReference.ScreenHeight = GlobalReference.ScreenHeight / 2;
+					GlobalReference.ScreenWidth = GlobalReference.ScreenWidth / 2;
+				}
             }
 				
 			Input.Update(gameTime);            // Update input
