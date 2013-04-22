@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Media;
 // added
 using Psychic_Lana.Overhead;
 using Psychic_Lana.Entities;
+using Psychic_Lana.GameObjects;
 using System.IO;
 
 namespace Psychic_Lana.Maps
@@ -33,8 +34,9 @@ namespace Psychic_Lana.Maps
 		public int Width;
 		public int Height;
 
-		//Entity List
+		//Lists
 		public List<Entity> Entities = new List<Entity>();
+		public List<Attack> Attacks = new List<Attack>();
 
 		public Map()
 		{
@@ -49,8 +51,8 @@ namespace Psychic_Lana.Maps
 
 			//Map
 			line = sr.ReadLine().Split(GlobalReference.Separators, StringSplitOptions.RemoveEmptyEntries);
-			Width          = Convert.ToInt32(line[0]);
-			Height         = Convert.ToInt32(line[1]);
+			Width = Convert.ToInt32(line[0]);
+			Height = Convert.ToInt32(line[1]);
 			int layerCount = Convert.ToInt32(line[2]);
 			int eventCount = Convert.ToInt32(line[3]);
 			passability = new bool[Width, Height];
@@ -96,6 +98,17 @@ namespace Psychic_Lana.Maps
 			{
 				Entities.ElementAt(i).Update(gameTime);
 			}
+			for (int i = 0; i < Attacks.Count; i++)
+			{
+				Attacks.ElementAt(i).Update(gameTime);
+				if (Attacks.ElementAt(i).Done)
+				{
+					Attacks.ElementAt(i).Frame = 0;
+					Attacks.ElementAt(i).Done = false;
+					Attacks.RemoveAt(i);
+					i--;
+				}
+			}
 		}
 		public void Draw(SpriteBatch spriteBatch)
 		{
@@ -110,10 +123,34 @@ namespace Psychic_Lana.Maps
 					}
 				}
 			}
+			if (GlobalReference.debugPath)
+				for (int i = 0; i < Entities.Count; i++)
+				{
+					GlobalReference.DrawPath(spriteBatch, Entities.ElementAt(i).Path);
+				}
 
+			Entities.Sort
+				(
+				delegate(Entity first, Entity second)
+				{
+					return (int)(first.Position.Y + first.Collision.Height) - (int)(second.Position.Y + second.Collision.Height);
+				}
+				);
 			for (int i = 0; i < Entities.Count; i++)
 			{
 				Entities.ElementAt(i).Draw(spriteBatch);
+			}
+
+			Attacks.Sort
+				(
+				delegate(Attack first, Attack second)
+				{
+					return (int)(first.Position.Y + first.Collision.Height) - (int)(second.Position.Y + second.Collision.Height);
+				}
+				);
+			for (int i = 0; i < Attacks.Count; i++)
+			{
+				Attacks.ElementAt(i).Draw(spriteBatch);
 			}
 		}
 		/// <summary>
@@ -130,7 +167,7 @@ namespace Psychic_Lana.Maps
 			int endY = (int)end.Y / 16;
 			for (int j = startY; j <= endY; j++)
 				for (int i = startX; i <= endX; i++)
-					if (i<0 || i>=Width || j<0 || j>=Height || !passability[i, j])
+					if (i < 0 || i >= Width || j < 0 || j >= Height || !passability[i, j])
 						return true;
 			return false;
 		}
@@ -158,7 +195,7 @@ namespace Psychic_Lana.Maps
 		public Vector2 CheckForSpace(Vector2 position, int width, int height)
 		{
 			// If the starting position is blocked, invalid
-			if(CheckCollisions(position))
+			if (CheckCollisions(position))
 				return new Vector2(0, 0);
 
 			// Set variables to each end of the starting tile (indicated by where position lies)
@@ -178,7 +215,7 @@ namespace Psychic_Lana.Maps
 				horizontal++;
 				east += GlobalReference.TileSize;
 			}
-			
+
 			int vertical = 0;
 			for (Vector2 check = new Vector2(position.X, position.Y - GlobalReference.TileSize); !CheckCollisions(check) && vertical < height; check.Y -= GlobalReference.TileSize)
 			{
@@ -202,10 +239,33 @@ namespace Psychic_Lana.Maps
 			}
 			return new Vector2(0, 0);
 		}
-
+		public Boolean ValidPath(int sX, int sY, int tX, int tY)
+		{
+			if (tX < 0 || tX >= Width || tY < 0 || tY >= Height || !passability[tX, tY])
+				return false;
+			if (sX == tX || sY == tY)
+				return true;
+			if (sX - tX >= 0)
+				if (!passability[sX - 1, sY])
+					return false;
+			if (sX - tX < 0)
+				if (!passability[sX + 1, sY])
+					return false;
+			if (sY - tY >= 0)
+				if (!passability[sX, sY - 1])
+					return false;
+			if (sY - tY < 0)
+				if (!passability[sX, sY + 1])
+					return false;
+			return true;
+		}
 
 		public List<Vector2> TilePath(Vector2 start, Vector2 end)
 		{
+			// Do not calculate path if target postion is unreachable
+			if (CheckCollisions(end))
+				return null;
+
 			start = GlobalReference.GetTilePosition(start);
 			end = GlobalReference.GetTilePosition(end);
 			// Initialize Structures
@@ -214,6 +274,9 @@ namespace Psychic_Lana.Maps
 			bool[,] visited = new bool[Width, Height];
 			List<Vector2> openset = new List<Vector2>();
 			Vector2[,] cameFrom = new Vector2[Width, Height];
+			for (int j = 0; j < Height; j++)
+				for (int i = 0; i < Width; i++)
+					cameFrom[i, j] = new Vector2(-1,-1);
 
 			// Add starting node to the list, and calculate the score
 			openset.Add(start);
@@ -221,12 +284,12 @@ namespace Psychic_Lana.Maps
 			fScore[(int)start.X, (int)start.Y] = gScore[(int)start.X, (int)start.Y] + GlobalReference.VectorDistance(start, end);
 
 			// A* loop (Sort openset each time)
-			for (openset.Sort(delegate(Vector2 first, Vector2 second)
-				{ return GlobalReference.VectorDistance(first, end).CompareTo(GlobalReference.VectorDistance(second, end)); });
-				openset.Count != 0;
-				openset.Sort(delegate(Vector2 first, Vector2 second)
-				{ return GlobalReference.VectorDistance(first, end).CompareTo(GlobalReference.VectorDistance(second, end)); }))
+			while (openset.Count != 0)
 			{
+				openset.Sort(delegate(Vector2 first, Vector2 second)
+				{
+					return fScore[(int)first.X, (int)first.Y].CompareTo(fScore[(int)second.X, (int)second.Y]);
+				});
 				Vector2 current = openset.ElementAt(0);
 				if (current == end)
 				{
@@ -236,22 +299,58 @@ namespace Psychic_Lana.Maps
 				openset.RemoveAt(0);
 				visited[(int)current.X, (int)current.Y] = true;
 
-				//// Try surrounding neihgbors
-				//for (int j = (int)current.Y - 1; j <= (int)current.Y + 1; j++)
-				//{
-				//    for (int i = (int)current.X - 1; i <= (int)current.X + 1; i++)
-				//    {
-				//        // Skip current position and invalid paths
-				//        if((i == (int)current.X && j == (int)current.Y) || 
+				// Try surrounding neihgbors
+				for (int j = (int)current.Y - 1; j <= (int)current.Y + 1; j++)
+				{
+					for (int i = (int)current.X - 1; i <= (int)current.X + 1; i++)
+					{
+						// Skip current position and invalid paths
+						if ((i == (int)current.X && j == (int)current.Y) || !ValidPath((int)current.X, (int)current.Y, i, j))
+							continue;
+						Vector2 neighbor = new Vector2(i, j);
+						double tentativeGScore = gScore[(int)current.X, (int)current.Y] + GlobalReference.VectorDistance(current, neighbor);
+						// Skip if this is not a better path
+						if (visited[(int)neighbor.X, (int)neighbor.Y])
+							if (tentativeGScore >= gScore[(int)neighbor.X, (int)neighbor.Y])
+								continue;
+
+						// Check if this exists in openset
+						bool contains = false;
+						for (int k = 0; k < openset.Count(); k++)
+						{
+							if ((int)openset.ElementAt(k).X == i && (int)openset.ElementAt(k).Y == j)
+							{
+								contains = true;
+								break;
+							}
+						}
+						// If this is a better path or not yet in openset, evaluate
+						if (!contains || tentativeGScore < gScore[(int)neighbor.X, (int)neighbor.Y])
+						{
+							cameFrom[(int)neighbor.X, (int)neighbor.Y] = current;
+							gScore[(int)neighbor.X, (int)neighbor.Y] = tentativeGScore;
+							fScore[(int)neighbor.X, (int)neighbor.Y] = tentativeGScore + GlobalReference.VectorDistance(neighbor, end);
+							if (!contains)
+								openset.Add(neighbor);
+						}
+					}
+				}
 			}
 
-				return null;
+			return null;
 		}
 		List<Vector2> ReconstructTilePath(Vector2[,] cameFrom, Vector2 currentNode)
 		{
-			//RECONSTRUCT PATH
-
-			return null;
+			// If it's not the end, add the node
+			if (!cameFrom[(int)currentNode.X, (int)currentNode.Y].Equals(new Vector2(-1,-1)))
+			{
+				List<Vector2> p = ReconstructTilePath(cameFrom, cameFrom[(int)currentNode.X, (int)currentNode.Y]);
+				p.Add(currentNode);
+				return p;
+			}
+			// Don't add start node (improves movement)
+			List<Vector2> r = new List<Vector2>();
+			return r;
 		}
 	}
 }

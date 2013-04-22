@@ -1,9 +1,12 @@
 #Psychic Lana#
-	Version    : 0.01.2
+	Version    : 0.01.3
 	Authors    : Brandon Scott, TJ Horwath
 	Description: A 2D Action RPG Monster Battling game
 ******************************************************
 ##Changelog##
+#April 21st, 2013 Brandon
++ Added A* Pathfinding
+
 #April 20th, 2013 Brandon
 * Updated cornering collisions to allow for rounding of corners
 	* Dynamically works with different collision boxes

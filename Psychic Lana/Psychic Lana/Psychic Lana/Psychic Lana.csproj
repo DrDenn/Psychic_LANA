@@ -110,6 +110,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GameObjects\Attack.cs" />
     <Compile Include="GameObjects\Entity.cs" />
     <Compile Include="Graphics\SpriteSheet.cs" />
     <Compile Include="Maps\Map.cs" />

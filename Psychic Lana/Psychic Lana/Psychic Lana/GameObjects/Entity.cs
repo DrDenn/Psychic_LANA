@@ -13,13 +13,14 @@ using Psychic_Lana.Overhead;
 using Psychic_Lana.Screens;
 using Psychic_Lana.Graphics;
 using Psychic_Lana.Maps;
+using Psychic_Lana.GameObjects;
 
 namespace Psychic_Lana.Entities
 {
 	/// <summary>
 	/// Enumeration representing various AI control Methods 
 	/// </summary>
-	public enum AIMode { DirectControl, Wait, Seek };
+	public enum AIMode { DirectControl, Wait, Seek, Path };
 	/// <summary>
 	/// Enumeration for Direction
 	/// </summary>
@@ -75,13 +76,17 @@ namespace Psychic_Lana.Entities
 		/// <summary>
 		/// Movement Speed
 		/// </summary>
-		public float Speed = 3.3f;
+		public float Speed = 2.2f;
 
 
 		/// <summary>
 		/// Entity AI Mode
 		/// </summary>
 		public AIMode Mode = AIMode.Wait;
+		public Entity Target;
+		public List<Vector2> Path = null;
+		public double AttackTime = 0;
+		public Attack CreatureAttack;
 
 
 		//GameScreen gameScreen;
@@ -135,10 +140,24 @@ namespace Psychic_Lana.Entities
 					UpdateDirectControl();
 					break;
 				case AIMode.Wait:
+					Path = null;
+					break;
+				case AIMode.Seek:
+					if(Target != null)
+						UpdateSeek(Target.Center);
+					break;
+				case AIMode.Path:
+					UpdatePath();
 					break;
 				default:
 					break;
 			}
+
+			// If x and y are BOTH non-zero, normalize Heading
+			if (Heading.X != 0 && Heading.Y != 0)
+				Heading.Normalize();
+			Heading = Heading * Speed;
+
 			// Calculate Movement Direction and Facing
 			if (Heading.Y < 0 && Heading.X == 0)
 			{
@@ -233,11 +252,80 @@ namespace Psychic_Lana.Entities
 				Heading.Y += 1;
 			if (Input.Down(Controls.Left))
 				Heading.X -= 1;
-			// If x and y are BOTH non-zero, normalize Heading
-			if (Heading.X != 0 && Heading.Y != 0)
-				Heading.Normalize();
-			Heading = Heading * Speed;
+			if (Input.Pressed(Controls.Confirm) && CreatureAttack != null)
+			{
+				Heading *= 0;
+				CreatureAttack.Position = Position;
+				switch (Facing)
+				{
+					case Direction.North:
+						CreatureAttack.Position.Y -= CreatureAttack.Collision.Width * 2;
+						break;
+					case Direction.East:
+						CreatureAttack.Position.X += CreatureAttack.Collision.Width * 2;
+						break;
+					case Direction.South:
+						CreatureAttack.Position.Y += CreatureAttack.Collision.Width * 2;
+						break;
+					case Direction.West:
+						CreatureAttack.Position.X -= CreatureAttack.Collision.Width * 2;
+						break;
+					default:
+						break;
+				}
+
+
+
+				map.Attacks.Add(CreatureAttack);
+			}
 		}
+
+		/// <summary>
+		/// Updates Heading based on the target
+		/// </summary>
+		/// <param name="target"></param>
+		void UpdateSeek(Vector2 target)
+		{
+			double distX = Center.X - target.X;
+			double distY = Center.Y - target.Y;
+			if (distY > Collision.Height / 2)
+				Heading.Y -= 1;
+			if (distX < -Collision.Width / 2)
+				Heading.X += 1;
+			if (distY < -Collision.Height / 2)
+				Heading.Y += 1;
+			if (distX > Collision.Width / 2)
+				Heading.X -= 1;
+		}
+		void FollowPath(Vector2 next)
+		{
+			double distX = Position.X - next.X;
+			double distY = Position.Y - next.Y;
+			if (distY > 0)
+				Heading.Y -= 1;
+			if (distX < Collision.Height / 2)
+				Heading.X += 1;
+			if (distY < Collision.Height / 2)
+				Heading.Y += 1;
+			if (distX > 0)
+				Heading.X -= 1;
+		}
+
+		void UpdatePath()
+		{
+			if (Path == null || Path.Count() == 0 || Path.ElementAt(Path.Count() - 1) != GlobalReference.GetTilePosition(Target.Center))
+				Path = map.TilePath(Position, Target.Center);
+			if (Path != null && Path.Count() > 0)
+			{
+				if (GlobalReference.GetTilePosition(Position) == Path.ElementAt(0))
+					Path.RemoveAt(0);
+				if (Path.Count() > 0)
+					FollowPath(new Vector2(Path.ElementAt(0).X * GlobalReference.TileSize, Path.ElementAt(0).Y * GlobalReference.TileSize));
+			}
+			if (Path == null)
+				UpdateSeek(Target.Center);
+		}
+
 		/// <summary>
 		/// Updates the heading based on the collisions. God damn, this code looks ugly.
 		/// </summary>
@@ -346,8 +434,18 @@ namespace Psychic_Lana.Entities
 					}
 					break;
 				default:
-
 					break;
+			}
+			for (int i = 0; i < map.Entities.Count(); i++)
+			{
+				if (map.Entities.ElementAt(i) != this)
+				{
+					Rectangle rect1 = new Rectangle((int)map.Entities.ElementAt(i).Position.X, (int)map.Entities.ElementAt(i).Position.Y, (int)map.Entities.ElementAt(i).Collision.Width, (int)map.Entities.ElementAt(i).Collision.Height);
+					Vector2 projected = Position + Heading;
+					Rectangle rect2 = new Rectangle((int)projected.X, (int)projected.Y, Collision.Width, Collision.Height);
+					if (rect1.Intersects(rect2))
+						Heading *= 0;
+				}
 			}
 		}
 		/// <summary>
@@ -368,6 +466,11 @@ namespace Psychic_Lana.Entities
 
 			if (GraphicState == "walking" && MovementDirection != Direction.Nowhere)
 				Frame += Heading.Length() / 16;
+			else if (GraphicState == "specialAttack")
+			{
+				Frame += 0.3;
+				AttackTime--;
+			}
 			else
 				Frame += 0.03;
 

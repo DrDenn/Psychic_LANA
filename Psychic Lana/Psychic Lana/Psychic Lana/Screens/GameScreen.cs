@@ -23,7 +23,7 @@ namespace Psychic_Lana.Screens
 	public class GameScreen : Screen
 	{
 		public MapManager mapManager;
-		public Entity Player;
+		public Entity Player, Player2;
 
 		public GameScreen()
 			: base()
@@ -51,6 +51,24 @@ namespace Psychic_Lana.Screens
 			Player.Mode = AIMode.DirectControl;
 			testMap.Entities.Add(Player);
 
+			// Create Entity
+			Player2 = new Entity();
+			Player2.Initialize(this, GlobalReference.startX + 100, GlobalReference.startY + 100, new Rectangle(0, 0, 12, 12));
+			Player2.AddSpriteSheet("standing", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/player/testStanding"), 12, 23);
+			Player2.AddSpriteSheet("walking", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/player/testWalking"), 12, 23);
+			Player2.AddSpriteSheet("specialAttack", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/player/testSpecialAttack"), 12, 23);
+			// Attack
+			Player2.CreatureAttack = new GameObjects.Attack();
+			Player2.CreatureAttack.Initialize(this, 0, 0, new Rectangle(0, 0, 16, 16));
+			Player2.CreatureAttack.AddSpriteSheet("attack", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/testAttackEffect"), 16, 16);
+			
+			Player2.Mode = AIMode.Wait;
+			testMap.Entities.Add(Player2);
+
+			// Set players as each other's target
+			Player.Target = Player2;
+			Player2.Target = Player;
+
 			base.Initialize();
 		}
 		public override void LoadContent()
@@ -59,6 +77,32 @@ namespace Psychic_Lana.Screens
 		}
 		public override void Update(GameTime gametime)
 		{
+			if (Input.Pressed(Controls.Console))
+			{
+				if (Player.Mode == AIMode.DirectControl)
+				{
+					Player2.Mode = AIMode.DirectControl;
+					Player.Mode = AIMode.Wait;
+				}
+				else
+				{
+					Player.Mode = AIMode.DirectControl;
+					Player2.Mode = AIMode.Wait;
+				}
+			}
+			if (Input.Pressed(Controls.Cancel))
+			{
+				if (Player.Mode == AIMode.Wait)
+					Player.Mode = AIMode.Path;
+				else if (Player.Mode == AIMode.Path)
+					Player.Mode = AIMode.Wait;
+
+				if (Player2.Mode == AIMode.Wait)
+					Player2.Mode = AIMode.Path;
+				else if (Player2.Mode == AIMode.Path)
+					Player2.Mode = AIMode.Wait;
+			}
+
 			mapManager.Update(gametime);
 		}
 		public override void Draw(SpriteBatch spriteBatch)
@@ -68,13 +112,15 @@ namespace Psychic_Lana.Screens
 			if (GlobalReference.debug)
 			{
 				StringBuilder debugLine = new StringBuilder();
-				debugLine.Append("Posi:(" + Player.Position.X + ", " + Player.Position.Y + ") "); // Position 
-				debugLine.Append("Tile:(" + Player.TilePosition.X + ", " + Player.TilePosition.Y + ") "); // Tile Position
-				debugLine.Append("Cent:(" + Player.Center.X + ", " + Player.Center.Y + ") "); // Center
+				debugLine.Append("Play 1: " + Player.Mode + " "); // AI Mode
+				debugLine.Append("Play 2: " + Player2.Mode + " "); // AI Mode
+				//debugLine.Append("Posi:(" + Player.Position.X + ", " + Player.Position.Y + ") "); // Position 
+				//debugLine.Append("Tile:(" + Player.TilePosition.X + ", " + Player.TilePosition.Y + ") "); // Tile Position
+				//debugLine.Append("Cent:(" + Player.Center.X + ", " + Player.Center.Y + ") "); // Center
 				//debugLine.Append("Exc:(" + Player.Excess.X + ", " + Player.Excess.Y + ") "); // Excess Heading
-				debugLine.Append("\nFace: " + Player.Facing + " "); // Facing 
-				debugLine.Append("Anim: " + Player.GraphicState + " "); // Graphic state
-				debugLine.Append("Move: " + Player.MovementDirection + " "); // Direction
+				//debugLine.Append("\nFace: " + Player.Facing + " "); // Facing 
+				//debugLine.Append("Anim: " + Player.GraphicState + " "); // Graphic state
+				//debugLine.Append("Move: " + Player.MovementDirection + " "); // Direction
 				//debugLine.Append("TlSz: (" + Player.CollisionTiles.X + ", " + Player.CollisionTiles.Y + ") "); // Collision box tile size
 
 
