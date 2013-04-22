@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Media;
 // added
 using Psychic_Lana.Overhead;
 using Psychic_Lana.Entities;
+using Psychic_Lana.GameObjects;
 using System.IO;
 
 namespace Psychic_Lana.Maps
@@ -33,8 +34,9 @@ namespace Psychic_Lana.Maps
 		public int Width;
 		public int Height;
 
-		//Entity List
+		//Lists
 		public List<Entity> Entities = new List<Entity>();
+		public List<Attack> Attacks = new List<Attack>();
 
 		public Map()
 		{
@@ -96,6 +98,17 @@ namespace Psychic_Lana.Maps
 			{
 				Entities.ElementAt(i).Update(gameTime);
 			}
+			for (int i = 0; i < Attacks.Count; i++)
+			{
+				Attacks.ElementAt(i).Update(gameTime);
+				if (Attacks.ElementAt(i).Done)
+				{
+					Attacks.ElementAt(i).Frame = 0;
+					Attacks.ElementAt(i).Done = false;
+					Attacks.RemoveAt(i);
+					i--;
+				}
+			}
 		}
 		public void Draw(SpriteBatch spriteBatch)
 		{
@@ -110,10 +123,11 @@ namespace Psychic_Lana.Maps
 					}
 				}
 			}
-			for (int i = 0; i < Entities.Count; i++)
-			{
-				GlobalReference.DrawPath(spriteBatch, Entities.ElementAt(i).Path);
-			}
+			if (GlobalReference.debugPath)
+				for (int i = 0; i < Entities.Count; i++)
+				{
+					GlobalReference.DrawPath(spriteBatch, Entities.ElementAt(i).Path);
+				}
 
 			Entities.Sort
 				(
@@ -125,6 +139,18 @@ namespace Psychic_Lana.Maps
 			for (int i = 0; i < Entities.Count; i++)
 			{
 				Entities.ElementAt(i).Draw(spriteBatch);
+			}
+
+			Attacks.Sort
+				(
+				delegate(Attack first, Attack second)
+				{
+					return (int)(first.Position.Y + first.Collision.Height) - (int)(second.Position.Y + second.Collision.Height);
+				}
+				);
+			for (int i = 0; i < Attacks.Count; i++)
+			{
+				Attacks.ElementAt(i).Draw(spriteBatch);
 			}
 		}
 		/// <summary>

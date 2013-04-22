@@ -13,6 +13,7 @@ using Psychic_Lana.Overhead;
 using Psychic_Lana.Screens;
 using Psychic_Lana.Graphics;
 using Psychic_Lana.Maps;
+using Psychic_Lana.GameObjects;
 
 namespace Psychic_Lana.Entities
 {
@@ -84,6 +85,8 @@ namespace Psychic_Lana.Entities
 		public AIMode Mode = AIMode.Wait;
 		public Entity Target;
 		public List<Vector2> Path = null;
+		public double AttackTime = 0;
+		public Attack CreatureAttack;
 
 
 		//GameScreen gameScreen;
@@ -249,7 +252,32 @@ namespace Psychic_Lana.Entities
 				Heading.Y += 1;
 			if (Input.Down(Controls.Left))
 				Heading.X -= 1;
-			
+			if (Input.Pressed(Controls.Confirm) && CreatureAttack != null)
+			{
+				Heading *= 0;
+				CreatureAttack.Position = Position;
+				switch (Facing)
+				{
+					case Direction.North:
+						CreatureAttack.Position.Y -= CreatureAttack.Collision.Width * 2;
+						break;
+					case Direction.East:
+						CreatureAttack.Position.X += CreatureAttack.Collision.Width * 2;
+						break;
+					case Direction.South:
+						CreatureAttack.Position.Y += CreatureAttack.Collision.Width * 2;
+						break;
+					case Direction.West:
+						CreatureAttack.Position.X -= CreatureAttack.Collision.Width * 2;
+						break;
+					default:
+						break;
+				}
+
+
+
+				map.Attacks.Add(CreatureAttack);
+			}
 		}
 
 		/// <summary>
@@ -438,6 +466,11 @@ namespace Psychic_Lana.Entities
 
 			if (GraphicState == "walking" && MovementDirection != Direction.Nowhere)
 				Frame += Heading.Length() / 16;
+			else if (GraphicState == "specialAttack")
+			{
+				Frame += 0.3;
+				AttackTime--;
+			}
 			else
 				Frame += 0.03;
 

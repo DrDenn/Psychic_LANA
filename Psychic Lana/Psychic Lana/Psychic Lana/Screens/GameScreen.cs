@@ -53,9 +53,15 @@ namespace Psychic_Lana.Screens
 
 			// Create Entity
 			Player2 = new Entity();
-			Player2.Initialize(this, GlobalReference.startX + 100, GlobalReference.startY + 100, new Rectangle(2, 0, 12, 12));
-			Player2.AddSpriteSheet("standing", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/player/standing"), 16, 27);
-			Player2.AddSpriteSheet("walking", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/player/walking"), 16, 27);
+			Player2.Initialize(this, GlobalReference.startX + 100, GlobalReference.startY + 100, new Rectangle(0, 0, 12, 12));
+			Player2.AddSpriteSheet("standing", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/player/testStanding"), 12, 23);
+			Player2.AddSpriteSheet("walking", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/player/testWalking"), 12, 23);
+			Player2.AddSpriteSheet("specialAttack", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/player/testSpecialAttack"), 12, 23);
+			// Attack
+			Player2.CreatureAttack = new GameObjects.Attack();
+			Player2.CreatureAttack.Initialize(this, 0, 0, new Rectangle(0, 0, 16, 16));
+			Player2.CreatureAttack.AddSpriteSheet("attack", Game.game.Content.Load<Texture2D>(@"Graphics/Entity/testAttackEffect"), 16, 16);
+			
 			Player2.Mode = AIMode.Wait;
 			testMap.Entities.Add(Player2);
 
@@ -71,7 +77,7 @@ namespace Psychic_Lana.Screens
 		}
 		public override void Update(GameTime gametime)
 		{
-			if (Input.Pressed(Controls.Confirm))
+			if (Input.Pressed(Controls.Console))
 			{
 				if (Player.Mode == AIMode.DirectControl)
 				{

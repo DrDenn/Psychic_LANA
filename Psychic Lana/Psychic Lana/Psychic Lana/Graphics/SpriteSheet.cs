@@ -31,8 +31,7 @@ namespace Psychic_Lana.Graphics
 		}
 		public void Draw(SpriteBatch spriteBatch, Rectangle position, int xIndex, int yIndex)
 		{
-			spriteBatch.Draw(Sheet,
-				position,//new Rectangle((int)position.X, (int)position.Y, ElementWidth, ElementHeight),
+			spriteBatch.Draw(Sheet, position,
 				new Rectangle((xIndex % HorizontalCount) * ElementWidth, (yIndex % VerticalCount) * ElementHeight, ElementWidth, ElementHeight),
 				Color.White);
 		}

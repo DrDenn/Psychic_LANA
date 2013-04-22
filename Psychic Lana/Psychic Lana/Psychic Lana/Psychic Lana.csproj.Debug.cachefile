@@ -9,5 +9,9 @@ Content\Fonts\default10.xnb
 Content\Fonts\default08.xnb
 Content\Graphics\Entity\player\standing.xnb
 Content\Graphics\Entity\player\walking.xnb
+Content\Graphics\Entity\player\testStanding.xnb
+Content\Graphics\Entity\player\testWalking.xnb
+Content\Graphics\Entity\player\testSpecialAttack.xnb
+Content\Graphics\Entity\testAttackEffect.xnb
 Maps\MapFiles\MapData\testMap.dat
 Maps\MapFiles\Tilesets\testTileset.tsd
